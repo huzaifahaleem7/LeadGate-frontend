@@ -77,4 +77,25 @@ const refreshAccessToken = async () => {
   }
 };
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+//getUserProfile
+const getUserProfile = async () => {
+  try {
+    const res = await api.get("/user/me", {
+      withCredentials: true,
+    });
+    return res.data;
+  } catch (error) {
+    console.error(
+      "Failed to fetch user profile",
+      error.response?.data?.message || error.message
+    );
+  }
+};
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  getUserProfile,
+};

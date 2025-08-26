@@ -1,105 +1,183 @@
 // src/pages/agent/AgentHomePage.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LeadDetailsModal from "../../components/modals/LeadDetailsModal.jsx";
-import { PlusIcon, Squares2X2Icon, ChartBarIcon } from "@heroicons/react/24/outline";
+import { Pie, Bar } from "react-chartjs-2";
+import { motion } from "framer-motion";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from "chart.js";
+import { useLeads } from "../../context/LeadContext/LeadContext.jsx";
+import { getUserProfile } from "../../api/authApi/authApi.js";
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const AgentHomePage = () => {
+  const { leads, fetchLeads } = useLeads();
   const [selectedLead, setSelectedLead] = useState(null);
+  const [loadingLeads, setLoadingLeads] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState({
+    total: 0,
+    approved: 0,
+    rejected: 0,
+    pending: 0,
+    dailyCounts: [],
+  });
 
-  // Placeholder stats
-  const stats = { total: 120, pending: 15, approved: 80, rejected: 25 };
+  // Fetch leads
+  useEffect(() => {
+    const loadLeads = async () => {
+      setLoadingLeads(true);
+      await fetchLeads();
+      setLoadingLeads(false);
+    };
+    loadLeads();
+  }, []);
 
-  // Placeholder recent leads
-  const recentLeads = [
-    { _id: 1, name: "Ali Khan", phone: "03001234567", status: "Pending", createdAt: new Date() },
-    { _id: 2, name: "Sara Ahmed", phone: "03007654321", status: "Approved", createdAt: new Date() },
-    { _id: 3, name: "Usman Riaz", phone: "03009871234", status: "Rejected", createdAt: new Date() },
-    { _id: 4, name: "Ayesha Iqbal", phone: "03006543210", status: "Approved", createdAt: new Date() },
-    { _id: 5, name: "Bilal Shah", phone: "03001112233", status: "Pending", createdAt: new Date() },
-  ];
+  // Fetch logged-in user
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await getUserProfile();
+        if (res?.data?.user) setUser(res.data.user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // Calculate stats whenever leads change
+  useEffect(() => {
+    if (!Array.isArray(leads)) return;
+
+    const total = leads.length;
+    const approved = leads.filter((l) => l.status === "Approved").length;
+    const rejected = leads.filter((l) => l.status === "Rejected").length;
+    const pending = leads.filter((l) => l.status === "Pending").length;
+
+    const dailyCounts = leads.reduce((acc, lead) => {
+      const date = new Date(lead.createdAt).toLocaleDateString();
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {});
+
+    const sortedDates = Object.keys(dailyCounts).sort(
+      (a, b) => new Date(a) - new Date(b)
+    );
+
+    setStats({
+      total,
+      approved,
+      rejected,
+      pending,
+      dailyCounts: sortedDates.map((date) => ({ date, count: dailyCounts[date] })),
+    });
+  }, [leads]);
+
+  const pieData = {
+    labels: ["Approved", "Rejected", "Pending"],
+    datasets: [
+      {
+        data: [stats.approved, stats.rejected, stats.pending],
+        backgroundColor: ["#10B981", "#EF4444", "#FBBF24"],
+        hoverOffset: 6,
+      },
+    ],
+  };
+
+  const barData = {
+    labels: stats.dailyCounts.map((d) => d.date),
+    datasets: [
+      {
+        label: "Leads Submitted",
+        data: stats.dailyCounts.map((d) => d.count),
+        backgroundColor: "#3B82F6", // Bluish color for bars
+      },
+    ],
+  };
+
+  // Loading screen
+  if (loadingUser || loadingLeads) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-900">
+        <motion.div
+          className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 bg-gray-900 min-h-screen text-gray-100">
-      {/* Welcome */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-50 mb-2">👋 Welcome, Agent!</h1>
-        <p className="text-gray-400">This is your dashboard placeholder. Add leads, track progress, view reports.</p>
+    <div className="p-6 bg-gray-900 min-h-screen text-gray-100 flex flex-col items-center">
+      {/* Smooth Welcome */}
+      <motion.div
+        className="text-center mb-12"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2, ease: "linear" }}
+      >
+        <h1 className="text-4xl md:text-5xl font-semibold text-white mb-2">
+          Welcome, {user?.fullName || "Agent"}!
+        </h1>
+        <p className="text-gray-400 text-lg md:text-xl">
+          Monitor your leads, analyze trends, and optimize performance.
+        </p>
+      </motion.div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 w-full">
+        {[
+          { label: "Total Leads", value: stats.total, bg: "bg-blue-500", text: "text-gray-50" },
+          { label: "Approved Leads", value: stats.approved, bg: "bg-green-500", text: "text-gray-50" },
+          { label: "Rejected Leads", value: stats.rejected, bg: "bg-red-500", text: "text-gray-50" },
+          { label: "Pending Leads", value: stats.pending, bg: "bg-yellow-500", text: "text-gray-900" },
+        ].map((card, idx) => (
+          <motion.div
+            key={idx}
+            className={`${card.bg} rounded-lg p-6 shadow-lg flex flex-col items-center cursor-pointer`}
+            whileHover={{ scale: 1.06 }}
+            transition={{ type: "spring", stiffness: 220, damping: 18 }}
+          >
+            <p className={`font-medium ${card.text}`}>{card.label}</p>
+            <p className={`text-3xl font-bold ${card.text}`}>{card.value}</p>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Quick Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-yellow-500 rounded-lg p-4 shadow-md flex flex-col items-center transform hover:scale-105 transition">
-          <p className="font-medium text-gray-900">Pending Leads</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-        </div>
-        <div className="bg-green-500 rounded-lg p-4 shadow-md flex flex-col items-center transform hover:scale-105 transition">
-          <p className="font-medium text-gray-50">Approved Leads</p>
-          <p className="text-2xl font-bold text-gray-50">{stats.approved}</p>
-        </div>
-        <div className="bg-red-500 rounded-lg p-4 shadow-md flex flex-col items-center transform hover:scale-105 transition">
-          <p className="font-medium text-gray-50">Rejected Leads</p>
-          <p className="text-2xl font-bold text-gray-50">{stats.rejected}</p>
-        </div>
-        <div className="bg-blue-500 rounded-lg p-4 shadow-md flex flex-col items-center transform hover:scale-105 transition">
-          <p className="font-medium text-gray-50">Total Leads</p>
-          <p className="text-2xl font-bold text-gray-50">{stats.total}</p>
-        </div>
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+        <motion.div
+          className="bg-gray-800 p-6 rounded-lg shadow-lg cursor-pointer"
+          whileHover={{ scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.4)" }}
+          transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        >
+          <h2 className="text-xl font-bold mb-4">Lead Status Distribution</h2>
+          <Pie data={pieData} />
+        </motion.div>
+
+        <motion.div
+          className="bg-gray-800 p-6 rounded-lg shadow-lg overflow-x-auto cursor-pointer"
+          whileHover={{ scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.4)" }}
+          transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        >
+          <h2 className="text-xl font-bold mb-4">Leads Submitted per Day</h2>
+          <Bar data={barData} />
+        </motion.div>
       </div>
 
-      {/* Quick Action Buttons */}
-      <div className="flex flex-wrap gap-4 mb-8">
-        <button className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded shadow transition">
-          <PlusIcon className="w-5 h-5 mr-2" /> Add New Lead
-        </button>
-        <button className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded shadow transition">
-          <Squares2X2Icon className="w-5 h-5 mr-2" /> View My Leads
-        </button>
-        <button className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded shadow transition">
-          <ChartBarIcon className="w-5 h-5 mr-2" /> View Reports
-        </button>
-      </div>
-
-      {/* Recent Leads Table */}
-      <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-700">
-          <thead className="bg-gray-700">
-            <tr>
-              <th className="px-4 py-2 text-left text-gray-100">Name</th>
-              <th className="px-4 py-2 text-left text-gray-100">Phone</th>
-              <th className="px-4 py-2 text-left text-gray-100">Status</th>
-              <th className="px-4 py-2 text-left text-gray-100">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentLeads.map((lead) => (
-              <tr
-                key={lead._id}
-                className="cursor-pointer bg-gray-800 hover:bg-gray-700 transition"
-                onClick={() => setSelectedLead(lead)}
-              >
-                <td className="px-4 py-2">{lead.name}</td>
-                <td className="px-4 py-2">{lead.phone}</td>
-                <td className="px-4 py-2">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      lead.status === "Pending"
-                        ? "bg-yellow-500 text-gray-900"
-                        : lead.status === "Approved"
-                        ? "bg-green-500 text-gray-50"
-                        : "bg-red-500 text-gray-50"
-                    }`}
-                  >
-                    {lead.status}
-                  </span>
-                </td>
-                <td className="px-4 py-2">{lead.createdAt.toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Lead Details Modal Placeholder */}
+      {/* Lead Details Modal */}
       {selectedLead && (
         <LeadDetailsModal lead={selectedLead} onClose={() => setSelectedLead(null)} />
       )}

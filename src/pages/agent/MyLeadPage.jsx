@@ -1,171 +1,149 @@
 // src/pages/agent/MyLeadsPage.jsx
 import { useState, useEffect } from "react";
 import { useLeads } from "../../context/LeadContext/LeadContext.jsx";
-import LeadDetailsModal from "../../components/modals/LeadDetailsModal.jsx";
+import { motion } from "framer-motion";
 
 const MyLeadsPage = () => {
-  const { leads, fetchLeads, fetchLeadById, loading } = useLeads();
-
+  const { leads, fetchLeads, loading } = useLeads();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [leadsPerPage] = useState(10);
-  const [selectedLead, setSelectedLead] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch all leads on component mount
   useEffect(() => {
-    if (fetchLeads) {
-      fetchLeads(); // <-- ensure fetchLeads exists
-    }
-  }, [fetchLeads]);
+    fetchLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Filter & search
-  const filteredLeads = leads
-    .filter(
-      (lead) =>
-        (lead.name || "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        (lead.phone || "").includes(searchTerm)
-    )
-    .filter((lead) => (statusFilter ? lead.status === statusFilter : true));
+  const safeLeads = Array.isArray(leads) ? leads : [];
 
-  // Pagination
-  const indexOfLastLead = currentPage * leadsPerPage;
-  const indexOfFirstLead = indexOfLastLead - leadsPerPage;
-  const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
-  const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
-
-  // Open modal
-  const handleRowClick = async (id) => {
-    if (!fetchLeadById) return;
-    const leadData = await fetchLeadById(id);
-    setSelectedLead(leadData);
-    setIsModalOpen(true);
+  const formatPhone = (phone) => {
+    if (!phone) return "";
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length === 10)
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    if (digits.length > 10)
+      return `+${digits.slice(
+        0,
+        digits.length - 10
+      )} (${digits.slice(-10, -7)}) ${digits.slice(-7, -4)}-${digits.slice(
+        -4
+      )}`;
+    return phone;
   };
 
+  const filteredLeads = safeLeads.filter(
+    (lead) =>
+      lead.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.phone?.includes(searchTerm) ||
+      lead.zipCode?.includes(searchTerm) ||
+      lead.jornayaId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.status?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="p-6 bg-gray-900 min-h-screen">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-100">My Leads</h1>
-        <p className="text-gray-400">
-          Track, search, and filter your submitted leads.
+    <div className="p-6 min-h-screen bg-gray-900 text-white flex flex-col">
+      {/* Heading */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-6"
+      >
+        <h2 className="text-3xl font-bold text-white drop-shadow-lg">My Leads</h2>
+        <p className="text-gray-400 mt-1">
+          Track and manage your leads efficiently with real-time updates.
         </p>
-      </div>
+      </motion.div>
 
-      {/* Search & Filter */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <input
-          type="text"
-          placeholder="Search by Name or Phone"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full md:w-1/3 px-3 py-2 rounded-md bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full md:w-1/4 px-3 py-2 rounded-md bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-        >
-          <option value="">All Statuses</option>
-          <option value="Pending">Pending</option>
-          <option value="Approved">Approved</option>
-          <option value="Rejected">Rejected</option>
-        </select>
-      </div>
+      {/* Search */}
+      <motion.input
+        type="text"
+        placeholder="Search by name, phone, ZIP, Jornaya ID, etc..."
+        className="w-full p-2 mb-6 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-green-400"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      />
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg shadow-md">
-        <table className="min-w-full bg-gray-800 text-gray-100">
-          <thead className="bg-gray-700">
+      {/* Scrollable Table Wrapper */}
+      <motion.div
+        className="w-full overflow-x-auto rounded-lg shadow-lg scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-700"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <table className="min-w-[1200px] w-full text-sm whitespace-nowrap">
+          <thead className="bg-gray-800 text-gray-300 uppercase text-xs tracking-wider">
             <tr>
-              <th className="px-4 py-2 text-left">Lead ID</th>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Phone</th>
-              <th className="px-4 py-2 text-left">State</th>
-              <th className="px-4 py-2 text-left">Status</th>
-              <th className="px-4 py-2 text-left">Team Lead Remarks</th>
-              <th className="px-4 py-2 text-left">Date Created</th>
+              <th className="px-4 py-3 text-left">First Name</th>
+              <th className="px-4 py-3 text-left">Last Name</th>
+              <th className="px-4 py-3 text-left">Phone</th>
+              <th className="px-4 py-3 text-left">ZIP</th>
+              <th className="px-4 py-3 text-left">Jornaya ID</th>
+              <th className="px-4 py-3 text-left">TCPA</th>
+              <th className="px-4 py-3 text-left">DNC</th>
+              <th className="px-4 py-3 text-left">Playback</th>
+              <th className="px-4 py-3 text-left">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-gray-900 divide-y divide-gray-700">
             {loading ? (
               <tr>
-                <td colSpan="7" className="text-center py-6">
-                  Loading...
+                <td colSpan="9" className="text-center py-6">
+                  {/* Bluish spinner like AgentHomePage */}
+                  <motion.div
+                    className="w-12 h-12 mx-auto border-4 border-blue-500 border-t-transparent rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+                  />
+                  <p className="text-gray-400 mt-2">Loading leads...</p>
                 </td>
               </tr>
-            ) : currentLeads.length === 0 ? (
+            ) : filteredLeads.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center py-6">
-                  No leads found
+                <td colSpan="9" className="text-center py-6 text-gray-400">
+                  No leads found.
                 </td>
               </tr>
             ) : (
-              currentLeads.map((lead) => (
-                <tr
-                  key={lead._id || lead.id}
-                  onClick={() => handleRowClick(lead._id || lead.id)}
-                  className="cursor-pointer hover:bg-gray-600 transition"
+              filteredLeads.map((lead, index) => (
+                <motion.tr
+                  key={lead._id}
+                  className="hover:bg-gray-800/70 transition-all duration-200 cursor-pointer"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
                 >
-                  <td className="px-4 py-2">{lead._id || lead.id}</td>
-                  <td className="px-4 py-2">{lead.name || "-"}</td>
-                  <td className="px-4 py-2">{lead.phone || "-"}</td>
-                  <td className="px-4 py-2">{lead.state || "-"}</td>
+                  <td className="px-4 py-2">{lead.firstName || "-"}</td>
+                  <td className="px-4 py-2">{lead.lastName || "-"}</td>
+                  <td className="px-4 py-2">{formatPhone(lead.phone)}</td>
+                  <td className="px-4 py-2">{lead.zipCode || "-"}</td>
+                  <td className="px-4 py-2 break-all">{lead.jornayaId || "-"}</td>
+                  <td className="px-4 py-2">{lead.tcpConsent ? "Submitted" : "Not Submitted"}</td>
+                  <td className="px-4 py-2">
+                    {lead.dncStatus === "none" ? "No / Not DNC" : lead.dncStatus}
+                  </td>
+                  <td className="px-4 py-2">{lead.playbackUrl ? "Available" : "N/A"}</td>
                   <td className="px-4 py-2">
                     <span
-                      className={`px-2 py-1 rounded-full font-medium text-sm ${
-                        lead.status === "Pending"
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        lead.status?.toLowerCase() === "active"
+                          ? "bg-green-600 text-white"
+                          : lead.status?.toLowerCase() === "pending"
                           ? "bg-yellow-500 text-gray-900"
-                          : lead.status === "Approved"
-                          ? "bg-green-500 text-gray-900"
-                          : "bg-red-500 text-gray-100"
+                          : "bg-red-500 text-white"
                       }`}
                     >
-                      {lead.status || "-"}
+                      {lead.status || "Pending"}
                     </span>
                   </td>
-                  <td className="px-4 py-2">{lead.remarks || "-"}</td>
-                  <td className="px-4 py-2">
-                    {lead.createdAt
-                      ? new Date(lead.createdAt).toLocaleDateString()
-                      : "-"}
-                  </td>
-                </tr>
+                </motion.tr>
               ))
             )}
           </tbody>
         </table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-4 gap-2">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded-md font-medium transition ${
-                currentPage === i + 1
-                  ? "bg-gray-700 text-white"
-                  : "bg-gray-600 text-gray-100 hover:bg-gray-700"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Lead Details Modal */}
-      {isModalOpen && selectedLead && (
-        <LeadDetailsModal
-          lead={selectedLead}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      </motion.div>
     </div>
   );
 };

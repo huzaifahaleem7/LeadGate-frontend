@@ -11,7 +11,8 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
-import { ArrowPathIcon } from "@heroicons/react/24/outline"; // updated icon
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
 
 ChartJS.register(
   ArcElement,
@@ -50,6 +51,7 @@ const ReportsPage = () => {
       acc[date]++;
       return acc;
     }, {});
+
     const sortedDates = Object.keys(dailyCounts).sort(
       (a, b) => new Date(a) - new Date(b)
     );
@@ -96,55 +98,103 @@ const ReportsPage = () => {
     ],
   };
 
+  // Motion Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1, when: "beforeChildren" }
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { type: "spring", stiffness: 120, damping: 20 } 
+    },
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-900">
+        <motion.div
+          className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 bg-gray-900 min-h-screen text-gray-100">
+    <motion.div
+      className="p-6 bg-gray-900 min-h-screen text-gray-100"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <motion.div
+        className="flex justify-between items-center mb-6"
+        variants={itemVariants}
+      >
         <div>
           <h1 className="text-2xl font-bold">Reports</h1>
           <p className="text-gray-400">View your lead performance at a glance.</p>
         </div>
         <button
           onClick={handleRefresh}
-          className="flex items-center bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md transition"
+          className="flex items-center bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md transition cursor-pointer"
         >
           <ArrowPathIcon className="w-5 h-5 mr-2" />
           {loading ? "Refreshing..." : "Refresh"}
         </button>
-      </div>
+      </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-blue-500 rounded-lg p-4 shadow-md flex flex-col items-center">
-          <p className="font-medium text-white">Total Leads Submitted</p>
-          <p className="text-2xl font-bold text-white">{stats.total}</p>
-        </div>
-        <div className="bg-green-500 rounded-lg p-4 shadow-md flex flex-col items-center">
-          <p className="font-medium text-white">Approved Leads</p>
-          <p className="text-2xl font-bold text-white">{stats.approved}</p>
-        </div>
-        <div className="bg-red-500 rounded-lg p-4 shadow-md flex flex-col items-center">
-          <p className="font-medium text-white">Rejected Leads</p>
-          <p className="text-2xl font-bold text-white">{stats.rejected}</p>
-        </div>
-        <div className="bg-yellow-500 rounded-lg p-4 shadow-md flex flex-col items-center">
-          <p className="font-medium text-gray-900">Pending Leads</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-        </div>
-      </div>
+      <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: "Total Leads Submitted", value: stats.total, color: "bg-blue-500", textColor: "text-white" },
+          { label: "Approved Leads", value: stats.approved, color: "bg-green-500", textColor: "text-white" },
+          { label: "Rejected Leads", value: stats.rejected, color: "bg-red-500", textColor: "text-white" },
+          { label: "Pending Leads", value: stats.pending, color: "bg-yellow-500", textColor: "text-gray-900" },
+        ].map((card, idx) => (
+          <motion.div
+            key={idx}
+            className={`${card.color} rounded-lg p-4 shadow-md flex flex-col items-center cursor-pointer`}
+            variants={itemVariants}
+            whileHover={{ scale: 1.03 }}
+          >
+            <p className={`font-medium ${card.textColor}`}>{card.label}</p>
+            <p className={`text-2xl font-bold ${card.textColor}`}>{card.value}</p>
+          </motion.div>
+        ))}
+      </motion.div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+      <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          className="bg-gray-800 p-4 rounded-lg shadow-md cursor-pointer"
+          variants={itemVariants}
+          whileHover={{ scale: 1.02 }}
+        >
           <h2 className="text-lg font-bold mb-2">Lead Status Distribution</h2>
           <Pie data={pieData} />
-        </div>
-        <div className="bg-gray-800 p-4 rounded-lg shadow-md overflow-x-auto">
+        </motion.div>
+
+        <motion.div
+          className="bg-gray-800 p-4 rounded-lg shadow-md overflow-x-auto cursor-pointer"
+          variants={itemVariants}
+          whileHover={{ scale: 1.02 }}
+        >
           <h2 className="text-lg font-bold mb-2">Leads Submitted per Day</h2>
           <Bar data={barData} />
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 };
 

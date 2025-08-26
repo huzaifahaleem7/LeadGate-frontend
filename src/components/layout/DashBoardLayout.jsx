@@ -1,7 +1,6 @@
-// src/components/layout/DashboardLayout.jsx
 import { NavLink } from "react-router-dom";
 import { PlusIcon, Squares2X2Icon, ChartBarIcon, HomeIcon } from "@heroicons/react/24/outline";
-import { Navbar } from "./index"; // Make sure you have Navbar component
+import { Navbar } from "./index"; // Ensure Navbar component exists
 
 const DashboardLayout = ({ children }) => {
   const sidebarLinks = [
@@ -12,11 +11,11 @@ const DashboardLayout = ({ children }) => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-900 text-gray-100">
-      {/* Sidebar */}
-      <div className="bg-gray-800 w-64 p-4 flex flex-col">
-        <h2 className="text-xl font-bold text-gray-50 mb-6">Agent Panel</h2>
-        <nav className="flex flex-col gap-2">
+    <div className="bg-gray-900 text-gray-100 min-h-screen">
+      {/* Fixed Sidebar */}
+      <aside className="fixed top-0 left-0 h-screen w-64 bg-gray-800 flex flex-col p-4">
+        <h2 className="text-xl font-bold text-gray-50 mb-6 cursor-default">Agent Panel</h2>
+        <nav className="flex flex-col gap-2 flex-1 overflow-y-auto">
           {sidebarLinks.map((link) => {
             const Icon = link.icon;
             return (
@@ -24,8 +23,8 @@ const DashboardLayout = ({ children }) => {
                 key={link.name}
                 to={link.path}
                 className={({ isActive }) =>
-                  `flex items-center px-3 py-2 rounded-md text-gray-200 hover:bg-gray-700 ${
-                    isActive ? "bg-gray-700 font-semibold" : ""
+                  `flex items-center px-3 py-2 rounded-md text-gray-200 hover:bg-gray-700 transition-colors cursor-pointer ${
+                    isActive ? "bg-gray-700 font-semibold text-white" : ""
                   }`
                 }
               >
@@ -34,12 +33,17 @@ const DashboardLayout = ({ children }) => {
             );
           })}
         </nav>
-      </div>
+      </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="ml-64 flex flex-col h-screen overflow-hidden">
+        {/* Navbar */}
         <Navbar />
-        <main className="p-6 flex-1 overflow-auto">{children}</main>
+
+        {/* Page Content */}
+        <main className="p-6 flex-1 overflow-auto">
+          <div className="w-full overflow-x-auto">{children}</div>
+        </main>
       </div>
     </div>
   );

@@ -16,7 +16,6 @@ const Sidebar = () => {
 
   if (!user) return null; // hide sidebar if no user
 
-  // Links per role
   const links = {
     agent: [
       { name: "Home", icon: HomeIcon, path: "/agent-dashboard" },
@@ -37,20 +36,22 @@ const Sidebar = () => {
   };
 
   const roleLinks = links[user.role] || [];
-
-  // Dashboard home link
   const dashboardLink = `/${user.role}-dashboard`;
 
   return (
-    <div className="bg-gray-900 text-gray-300 w-64 space-y-6 py-7 px-2 h-screen">
+    <div className="bg-gray-900 text-gray-300 w-64 flex-none flex flex-col space-y-6 py-7 px-2
+                    fixed top-0 left-0 h-screen overflow-y-auto">
       {/* Logo */}
-      <Link to={dashboardLink} className="text-white flex items-center space-x-2 px-4 cursor-pointer">
+      <Link
+        to={dashboardLink}
+        className="text-white flex items-center space-x-2 px-4 cursor-pointer"
+      >
         <HomeIcon className="w-6 h-6" />
         <span className="text-2xl font-bold">LeadGate</span>
       </Link>
 
       {/* Navigation Links */}
-      <nav className="mt-10">
+      <nav className="mt-10 flex-1">
         {roleLinks.map((link) => {
           const isActive = location.pathname === link.path;
           return (
@@ -61,7 +62,9 @@ const Sidebar = () => {
                 isActive ? "bg-gray-700 text-white" : "hover:bg-gray-800 hover:text-white"
               }`}
             >
-              <link.icon className={`w-5 h-5 mr-3 ${isActive ? "text-white" : "text-gray-300"}`} />
+              <link.icon
+                className={`w-5 h-5 mr-3 ${isActive ? "text-white" : "text-gray-300"}`}
+              />
               <span className="font-medium">{link.name}</span>
             </Link>
           );

@@ -16,7 +16,7 @@ export const LeadProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await getAllLeads();
-      setLeads(res.leads || []);
+      setLeads(res.data.leads || []);
     } catch (error) {
       console.error(
         "Failed to fetch leads:",
@@ -80,6 +80,7 @@ export const LeadProvider = ({ children }) => {
         loading,
         createdLead,
         fetchLeadById,
+        fetchLeads
       }}
     >
       {children}
