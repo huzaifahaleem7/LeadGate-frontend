@@ -5,7 +5,7 @@ function TeamleadDashboard() {
     <div className="min-h-screen bg-gray-100 p-8">
       {/* Dashboard Header */}
       <div className="mb-8 text-center">
-        <h1 className="text-5xl font-bold text-blue-600">Agent Dashboard</h1>
+        <h1 className="text-5xl font-bold text-blue-600">Teamlead Dashboard</h1>
         <p className="text-gray-600 mt-2">Your workspace overview</p>
       </div>
 

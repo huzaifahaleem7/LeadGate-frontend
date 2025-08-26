@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
       case "agent":
         navigate("/agent-dashboard");
         break;
-      case "teamLead":
+      case "teamlead":
         navigate("/teamlead-dashboard");
         break;
       case "admin":

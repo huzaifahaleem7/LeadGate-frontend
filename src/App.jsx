@@ -5,46 +5,50 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext/AuthContext.jsx";
+import { LeadProvider } from "./context/LeadContext/LeadContext.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { Toaster } from "react-hot-toast";
 
 // pages
 import { Login, Signup } from "./pages/auth/index.js";
-import { AgentDashboard } from "./pages/agent";
+import {
+  AgentDashboard,
+  AddLeadPage,
+  MyLeadsPage,
+  ReportsPage,
+} from "./pages/agent";
 import { TeamleadDashboard } from "./pages/teamlead";
 import { AdminDashboard } from "./pages/admin";
 
 // components
-import { Navbar } from "./components/layout";
-
-// Layout wrapper for dashboards
-function DashboardLayout({ children }) {
-  return (
-    <>
-      <Navbar />
-      {children}
-    </>
-  );
-}
+import DashboardLayout from "./components/layout/DashboardLayout.jsx";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
+        <Toaster position="top-right" reverseOrder={false} />
+
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-
-          {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
 
-          {/* Agent Dashboard */}
+          {/* Agent Dashboard with nested routes */}
           <Route
-            path="/agent-dashboard"
+            path="/agent-dashboard/*"
             element={
               <ProtectedRoute allowedRoles={["agent"]}>
                 <DashboardLayout>
-                  <AgentDashboard />
+                  <LeadProvider>
+                    <Routes>
+                      <Route path="" element={<AgentDashboard />} />
+                      <Route path="add-lead" element={<AddLeadPage />} />
+                      <Route path="my-leads" element={<MyLeadsPage />} />
+                      <Route path="reports" element={<ReportsPage />} />
+                    </Routes>
+                  </LeadProvider>
                 </DashboardLayout>
               </ProtectedRoute>
             }
@@ -52,9 +56,9 @@ function App() {
 
           {/* Team Lead Dashboard */}
           <Route
-            path="/teamlead-dashboard"
+            path="/teamlead-dashboard/*"
             element={
-              <ProtectedRoute allowedRoles={["teamLead"]}>
+              <ProtectedRoute allowedRoles={["teamlead"]}>
                 <DashboardLayout>
                   <TeamleadDashboard />
                 </DashboardLayout>
@@ -64,7 +68,7 @@ function App() {
 
           {/* Admin Dashboard */}
           <Route
-            path="/admin-dashboard"
+            path="/admin-dashboard/*"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <DashboardLayout>
@@ -74,7 +78,7 @@ function App() {
             }
           />
 
-          {/* Optional: fallback for unknown routes */}
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>

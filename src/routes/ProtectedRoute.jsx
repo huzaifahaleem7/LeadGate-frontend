@@ -28,12 +28,10 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     switch (user.role) {
       case "agent":
         return <Navigate to="/agent-dashboard" replace />;
-      case "teamLead":
+      case "teamlead":
         return <Navigate to="/teamlead-dashboard" replace />;
       case "admin":
         return <Navigate to="/admin-dashboard" replace />;
-      default:
-        return <Navigate to="/dashboard" replace />;
     }
   }
 
