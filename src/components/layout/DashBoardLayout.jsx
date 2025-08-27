@@ -1,8 +1,8 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { PlusIcon, Squares2X2Icon, ChartBarIcon, HomeIcon } from "@heroicons/react/24/outline";
-import { Navbar } from "./index"; // Ensure Navbar component exists
+import { Navbar } from "./index";
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayout = () => {
   const sidebarLinks = [
     { name: "Home", path: "/agent-dashboard", icon: HomeIcon },
     { name: "Add Lead", path: "/agent-dashboard/add-lead", icon: PlusIcon },
@@ -12,7 +12,7 @@ const DashboardLayout = ({ children }) => {
 
   return (
     <div className="bg-gray-900 text-gray-100 min-h-screen">
-      {/* Fixed Sidebar */}
+      {/* Sidebar */}
       <aside className="fixed top-0 left-0 h-screen w-64 bg-gray-800 flex flex-col p-4">
         <h2 className="text-xl font-bold text-gray-50 mb-6 cursor-default">Agent Panel</h2>
         <nav className="flex flex-col gap-2 flex-1 overflow-y-auto">
@@ -42,7 +42,9 @@ const DashboardLayout = ({ children }) => {
 
         {/* Page Content */}
         <main className="p-6 flex-1 overflow-auto">
-          <div className="w-full overflow-x-auto">{children}</div>
+          <div className="w-full overflow-x-auto">
+            <Outlet /> {/* Yahan pe nested routes ka content ayega */}
+          </div>
         </main>
       </div>
     </div>

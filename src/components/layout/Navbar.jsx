@@ -10,10 +10,10 @@ const Navbar = () => {
   const dropdownRef = useRef();
   const navigate = useNavigate();
 
-  // Close dropdown when clicked outside
+  // Close dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
     };
@@ -24,64 +24,55 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login"); // Redirect after logout
-    } catch (error) {
-      console.error("Logout failed:", error);
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
     }
   };
 
-  // Dynamic dashboard link based on user role
-  const getDashboardLink = () => {
-    if (!user) return "/login";
-    switch (user.role) {
-      case "agent":
-        return "/agent-dashboard";
-      case "teamlead":
-        return "/teamlead-dashboard";
-      case "admin":
-        return "/admin-dashboard";
-      default:
-        return "/dashboard";
-    }
+  // Dashboard link mapping
+  const dashboardLinks = {
+    agent: "/agent-dashboard",
+    teamlead: "/teamlead-dashboard",
+    admin: "/admin-dashboard",
   };
+  const dashboardLink = user ? dashboardLinks[user.role] || "/dashboard" : "/login";
 
   return (
     <nav className="bg-[#1E3A8A] text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           
-          {/* Left: Logo */}
+          {/* Logo */}
           <Link
-            to={getDashboardLink()}
-            className="text-2xl font-semibold hover:text-[#2563EB] transition-colors duration-200 cursor-pointer"
+            to={dashboardLink}
+            className="text-2xl font-semibold hover:text-[#2563EB] transition-colors"
           >
             LeadGate
           </Link>
 
-          {/* Right: Profile */}
+          {/* Profile */}
           {user && (
             <div className="relative" ref={dropdownRef}>
-              {/* Profile Icon */}
               <button
                 onClick={() => setDropdownOpen(!isDropdownOpen)}
-                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#2563EB] transition-colors duration-200 cursor-pointer"
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#2563EB] transition-colors cursor-pointer"
               >
                 <FaUserCircle className="w-7 h-7 text-white" />
               </button>
 
-              {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#1E3A8A] rounded-md shadow-lg overflow-hidden z-50 transition-all duration-200">
+                <div className="absolute right-0 mt-2 w-48 bg-[#1E3A8A] rounded-md shadow-lg z-50">
                   <Link
                     to="/profile-settings"
-                    className="block px-4 py-2 hover:bg-[#2563EB] font-medium transition-colors duration-200 cursor-pointer rounded-t-md"
+                    className="block px-4 py-2 hover:bg-[#2563EB] font-medium"
                     onClick={() => setDropdownOpen(false)}
                   >
                     Profile Settings
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 hover:bg-[#B91C1C] bg-[#EF4444] font-medium rounded-b-md transition-colors duration-200 cursor-pointer"
+                    className="w-full text-left px-4 py-2 hover:bg-[#B91C1C] bg-[#EF4444] font-medium rounded-b-md transition-colors cursor-pointer"
                   >
                     Logout
                   </button>

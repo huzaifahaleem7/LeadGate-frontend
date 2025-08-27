@@ -16,7 +16,8 @@ const Sidebar = () => {
 
   if (!user) return null; // hide sidebar if no user
 
-  const links = {
+  // Centralized links config
+  const linksConfig = {
     agent: [
       { name: "Home", icon: HomeIcon, path: "/agent-dashboard" },
       { name: "Add Lead", icon: PlusIcon, path: "/agent-dashboard/add-lead" },
@@ -35,42 +36,40 @@ const Sidebar = () => {
     ],
   };
 
-  const roleLinks = links[user.role] || [];
-  const dashboardLink = `/${user.role}-dashboard`;
+  const roleLinks = linksConfig[user.role] || [];
 
   return (
-    <div className="bg-gray-900 text-gray-300 w-64 flex-none flex flex-col space-y-6 py-7 px-2
-                    fixed top-0 left-0 h-screen overflow-y-auto">
+    <aside className="bg-gray-900 text-gray-300 w-64 flex-none flex flex-col space-y-6 py-7 px-2 fixed top-0 left-0 h-screen overflow-y-auto">
       {/* Logo */}
       <Link
-        to={dashboardLink}
+        to={`/${user.role}-dashboard`}
         className="text-white flex items-center space-x-2 px-4 cursor-pointer"
       >
         <HomeIcon className="w-6 h-6" />
         <span className="text-2xl font-bold">LeadGate</span>
       </Link>
 
-      {/* Navigation Links */}
+      {/* Navigation */}
       <nav className="mt-10 flex-1">
-        {roleLinks.map((link) => {
-          const isActive = location.pathname === link.path;
+        {roleLinks.map(({ name, icon: Icon, path }) => {
+          const isActive = location.pathname === path;
           return (
             <Link
-              key={link.name}
-              to={link.path}
+              key={name}
+              to={path}
               className={`flex items-center px-4 py-2 my-1 rounded-md transition-colors duration-200 cursor-pointer ${
                 isActive ? "bg-gray-700 text-white" : "hover:bg-gray-800 hover:text-white"
               }`}
             >
-              <link.icon
+              <Icon
                 className={`w-5 h-5 mr-3 ${isActive ? "text-white" : "text-gray-300"}`}
               />
-              <span className="font-medium">{link.name}</span>
+              <span className="font-medium">{name}</span>
             </Link>
           );
         })}
       </nav>
-    </div>
+    </aside>
   );
 };
 

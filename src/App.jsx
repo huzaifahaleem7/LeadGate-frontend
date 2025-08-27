@@ -20,7 +20,7 @@ import {
 import { TeamleadDashboard } from "./pages/teamlead";
 import { AdminDashboard } from "./pages/admin";
 
-// components
+// layout
 import DashboardLayout from "./components/layout/DashboardLayout.jsx";
 
 function App() {
@@ -37,46 +37,44 @@ function App() {
 
           {/* Agent Dashboard with nested routes */}
           <Route
-            path="/agent-dashboard/*"
+            path="/agent-dashboard"
             element={
               <ProtectedRoute allowedRoles={["agent"]}>
-                <DashboardLayout>
-                  <LeadProvider>
-                    <Routes>
-                      <Route path="" element={<AgentDashboard />} />
-                      <Route path="add-lead" element={<AddLeadPage />} />
-                      <Route path="my-leads" element={<MyLeadsPage />} />
-                      <Route path="reports" element={<ReportsPage />} />
-                    </Routes>
-                  </LeadProvider>
-                </DashboardLayout>
+                <LeadProvider>
+                  <DashboardLayout />
+                </LeadProvider>
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<AgentDashboard />} />
+            <Route path="add-lead" element={<AddLeadPage />} />
+            <Route path="my-leads" element={<MyLeadsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+          </Route>
 
           {/* Team Lead Dashboard */}
           <Route
-            path="/teamlead-dashboard/*"
+            path="/teamlead-dashboard"
             element={
               <ProtectedRoute allowedRoles={["teamlead"]}>
-                <DashboardLayout>
-                  <TeamleadDashboard />
-                </DashboardLayout>
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<TeamleadDashboard />} />
+          </Route>
 
           {/* Admin Dashboard */}
           <Route
-            path="/admin-dashboard/*"
+            path="/admin-dashboard"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <DashboardLayout>
-                  <AdminDashboard />
-                </DashboardLayout>
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<AdminDashboard />} />
+          </Route>
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />
