@@ -25,8 +25,8 @@ const addLead = async ({ firstName, lastName, phone, zipCode, jornayaId }) => {
 const getAllLeads = async () => {
   try {
     const res = await api.get("/lead/leads", { withCredentials: true });
-    console.log("Fetched all leads:", res.data);
-    return res.data;
+    console.log("Fetched all leads:", res.data.data.leads);
+    return res.data.data.leads;
   } catch (error) {
     console.error(
       "Failed to run getAllLeads API:",

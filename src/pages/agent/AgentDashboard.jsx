@@ -1,3 +1,4 @@
+// src/pages/agent/AgentHomePage.jsx
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useLeads } from "../../context/LeadContext/LeadContext.jsx";
@@ -48,17 +49,12 @@ const AgentHomePage = () => {
   // Sequential animation variants
   const container = {
     hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1, // each letter appears 0.1s after previous
-      },
-    },
+    show: { opacity: 1, transition: { staggerChildren: 0.05 } },
   };
 
   const child = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
   const welcomeText = `Welcome, ${user?.fullName || "Agent"}!`;
@@ -103,8 +99,10 @@ const AgentHomePage = () => {
           <h2 className="text-xl font-bold mb-4">Lead Status Distribution</h2>
           <LeadPieChart stats={stats} />
         </motion.div>
+
         <motion.div className="bg-gray-800 p-6 rounded-lg shadow-lg" whileHover={{ scale: 1.02 }}>
           <h2 className="text-xl font-bold mb-4">Leads Submitted per Day</h2>
+          {/* Updated bar chart component */}
           <LeadsBarChart stats={stats} />
         </motion.div>
       </div>

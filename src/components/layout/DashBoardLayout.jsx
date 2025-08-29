@@ -4,7 +4,7 @@ import { Navbar } from "./index";
 
 const DashboardLayout = () => {
   const sidebarLinks = [
-    { name: "Home", path: "/agent-dashboard", icon: HomeIcon },
+    { name: "Home", path: "/agent-dashboard", icon: HomeIcon, exact: true },
     { name: "Add Lead", path: "/agent-dashboard/add-lead", icon: PlusIcon },
     { name: "My Leads", path: "/agent-dashboard/my-leads", icon: Squares2X2Icon },
     { name: "Reports", path: "/agent-dashboard/reports", icon: ChartBarIcon },
@@ -22,6 +22,7 @@ const DashboardLayout = () => {
               <NavLink
                 key={link.name}
                 to={link.path}
+                end={link.exact || false} // <-- ensures exact match only for Home
                 className={({ isActive }) =>
                   `flex items-center px-3 py-2 rounded-md text-gray-200 hover:bg-gray-700 transition-colors cursor-pointer ${
                     isActive ? "bg-gray-700 font-semibold text-white" : ""
@@ -37,13 +38,10 @@ const DashboardLayout = () => {
 
       {/* Main Content */}
       <div className="ml-64 flex flex-col h-screen overflow-hidden">
-        {/* Navbar */}
         <Navbar />
-
-        {/* Page Content */}
         <main className="p-6 flex-1 overflow-auto">
           <div className="w-full overflow-x-auto">
-            <Outlet /> {/* Yahan pe nested routes ka content ayega */}
+            <Outlet /> {/* Nested route content */}
           </div>
         </main>
       </div>

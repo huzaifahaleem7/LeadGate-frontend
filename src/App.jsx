@@ -21,7 +21,7 @@ import { TeamleadDashboard } from "./pages/teamlead";
 import { AdminDashboard } from "./pages/admin";
 
 // layout
-import DashboardLayout from "./components/layout/DashboardLayout.jsx";
+import DashboardLayout from "./components/layout/DashBoardLayout.jsx";
 
 function App() {
   return (
@@ -37,7 +37,7 @@ function App() {
 
           {/* Agent Dashboard with nested routes */}
           <Route
-            path="/agent-dashboard"
+            path="/agent-dashboard/*" // <- added /* here
             element={
               <ProtectedRoute allowedRoles={["agent"]}>
                 <LeadProvider>
@@ -52,9 +52,9 @@ function App() {
             <Route path="reports" element={<ReportsPage />} />
           </Route>
 
-          {/* Team Lead Dashboard */}
+          {/* Team Lead Dashboard with nested routes */}
           <Route
-            path="/teamlead-dashboard"
+            path="/teamlead-dashboard/*" // <- added /* here
             element={
               <ProtectedRoute allowedRoles={["teamlead"]}>
                 <DashboardLayout />
@@ -64,9 +64,9 @@ function App() {
             <Route index element={<TeamleadDashboard />} />
           </Route>
 
-          {/* Admin Dashboard */}
+          {/* Admin Dashboard with nested routes */}
           <Route
-            path="/admin-dashboard"
+            path="/admin-dashboard/*" // <- added /* here
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <DashboardLayout />

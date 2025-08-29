@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
+// src/context/LeadContext/LeadContext.jsx
+import { createContext, useContext, useState, useEffect } from "react";
 import {
   addLead,
   getAllLeads,
@@ -10,66 +11,54 @@ const LeadContext = createContext();
 export const LeadProvider = ({ children }) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Fetch all leads on mount
+  // ✅ Fetch all leads
   const fetchLeads = async () => {
     try {
       setLoading(true);
-      const res = await getAllLeads();
-      setLeads(res.data.leads || []);
-    } catch (error) {
-      console.error(
-        "Failed to fetch leads:",
-        error.response?.data?.message || error.message
-      );
-      throw error;
+      setError(null);
+
+      const fetchedLeads = await getAllLeads(); 
+      // getAllLeads already returns array in your api file
+      setLeads(fetchedLeads || []);
+    } catch (err) {
+      console.error("Failed to fetch leads:", err);
+      setError(err.message || "Failed to fetch leads");
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ Run once on mount
   useEffect(() => {
     fetchLeads();
   }, []);
 
-  // Fetch lead by ID
+  // ✅ Fetch lead by ID
   const fetchLeadById = async (id) => {
     try {
       const res = await getLeadById(id);
-      return res.leadById;
-    } catch (error) {
-      console.error(
-        "Fetch lead by ID failed:",
-        error.response?.data?.message || error.message
-      );
-      throw error;
+      return res?.leadById || res; // handle both cases
+    } catch (err) {
+      console.error("Fetch lead by ID failed:", err);
+      throw err;
     }
   };
 
-  // Add new lead
-  const createdLead = async ({
-    firstName,
-    lastName,
-    phone,
-    zipCode,
-    jornayaId,
-  }) => {
+  // ✅ Add new lead
+  const createdLead = async (leadData) => {
     try {
-      const res = await addLead({
-        firstName,
-        lastName,
-        phone,
-        zipCode,
-        jornayaId,
-      });
-      setLeads((prevLeads) => [res.lead, ...prevLeads]);
-      return res;
-    } catch (error) {
-      console.error(
-        "Add Lead failed:",
-        error.response?.data?.message || error.message
-      );
-      throw error;
+      const res = await addLead(leadData);
+      const newLead = res?.lead || res; // ensure object
+
+      if (newLead && typeof newLead === "object") {
+        setLeads((prevLeads) => [newLead, ...prevLeads]);
+      }
+      return newLead;
+    } catch (err) {
+      console.error("Add Lead failed:", err);
+      throw err;
     }
   };
 
@@ -78,9 +67,10 @@ export const LeadProvider = ({ children }) => {
       value={{
         leads,
         loading,
-        createdLead,
+        error,
+        fetchLeads,
         fetchLeadById,
-        fetchLeads
+        createdLead, // ✅ same name as your old context
       }}
     >
       {children}

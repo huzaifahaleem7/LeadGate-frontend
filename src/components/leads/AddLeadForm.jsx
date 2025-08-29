@@ -3,6 +3,7 @@ import { useLeads } from "../../context/LeadContext/LeadContext.jsx";
 import { toast } from "react-hot-toast";
 import SubmittedLeadTable from "./SubmittedLeadTable.jsx";
 
+// Input Field Component
 const InputField = ({ label, name, value, onChange, error, type = "text", placeholder }) => (
   <div className="w-full">
     <label className="block mb-2 text-sm font-semibold text-gray-300 tracking-wide">
@@ -17,9 +18,7 @@ const InputField = ({ label, name, value, onChange, error, type = "text", placeh
       className={`w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 border shadow-sm 
         transition duration-200 ease-in-out placeholder-gray-400
         focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900
-        ${error 
-          ? "border-red-500 focus:ring-red-500" 
-          : "border-gray-700 focus:ring-indigo-500"}`}
+        ${error ? "border-red-500 focus:ring-red-500" : "border-gray-700 focus:ring-indigo-500"}`}
     />
     {error && (
       <p className="text-red-400 text-sm mt-2 flex items-center animate-fadeIn">
@@ -42,11 +41,11 @@ const AddLeadForm = () => {
   const [showForm, setShowForm] = useState(true);
 
   const rules = {
-    firstName: (val) => (!val.trim() ? "First name is required" : ""),
-    lastName: (val) => (!val.trim() ? "Last name is required" : ""),
-    phone: (val) => !/^\d{10,15}$/.test(val.trim()) ? "Phone must be 10–15 digits" : "",
-    zipCode: (val) => !/^\d{5}$/.test(val.trim()) ? "Zip Code must be 5 digits" : "",
-    jornayaId: (val) => (!val.trim() ? "Jornaya ID is required" : "")
+    firstName: val => (!val.trim() ? "First name is required" : ""),
+    lastName: val => (!val.trim() ? "Last name is required" : ""),
+    phone: val => !/^\d{10,15}$/.test(val.trim()) ? "Phone must be 10–15 digits" : "",
+    zipCode: val => !/^\d{5}$/.test(val.trim()) ? "Zip Code must be 5 digits" : "",
+    jornayaId: val => (!val.trim() ? "Jornaya ID is required" : "")
   };
 
   const validate = () => {
@@ -61,10 +60,7 @@ const AddLeadForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      const error = rules[name](value);
-      setErrors(prev => ({ ...prev, [name]: error }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: rules[name](value) }));
   };
 
   const handleSubmit = async (e) => {
@@ -82,12 +78,15 @@ const AddLeadForm = () => {
     try {
       const payload = Object.fromEntries(Object.entries(formData).map(([k, v]) => [k, v.trim()]));
       const res = await createdLead(payload);
+
+      if (!res?.data?.lead) throw new Error("Invalid API response");
+
       toast.success("✅ Lead saved successfully!");
       setLastLead(res.data.lead);
       setShowForm(false);
       setFormData(initialState);
     } catch (err) {
-      toast.error(err.response?.data?.message || "❌ Failed to save lead.");
+      toast.error(err.response?.data?.message || err.message || "❌ Failed to save lead.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -101,7 +100,6 @@ const AddLeadForm = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-8 bg-gray-900 rounded-2xl shadow-2xl space-y-10 animate-fadeIn">
-      
       {showForm && (
         <div className="space-y-8">
           <div className="flex items-center justify-between border-b border-gray-700 pb-4">
@@ -135,9 +133,7 @@ const AddLeadForm = () => {
                     </svg>
                     Saving Lead...
                   </>
-                ) : (
-                  "Submit Lead"
-                )}
+                ) : "Submit Lead"}
               </button>
 
               <button
@@ -152,22 +148,7 @@ const AddLeadForm = () => {
         </div>
       )}
 
-      {lastLead && (
-        <div className="space-y-6">
-          <SubmittedLeadTable lead={lastLead} />
-          <div className="text-center pt-6">
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-green-600 hover:bg-green-700 active:scale-95 text-white px-8 py-3.5 rounded-xl font-semibold shadow-md transition duration-200 cursor-pointer inline-flex items-center"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-              </svg>
-              Add Another Lead
-            </button>
-          </div>
-        </div>
-      )}
+      {lastLead && <SubmittedLeadTable lead={lastLead} />}
     </div>
   );
 };
