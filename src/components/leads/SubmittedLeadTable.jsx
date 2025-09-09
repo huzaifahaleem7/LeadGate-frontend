@@ -3,23 +3,12 @@ const SubmittedLeadTable = ({ lead }) => {
 
   const StatusBadge = ({ status, type }) => {
     const config = {
-      status: {
-        pending: { text: "Pending", color: "bg-yellow-500" },
-        approved: { text: "Approved", color: "bg-green-600" },
-        rejected: { text: "Rejected", color: "bg-red-600" },
-        default: { text: "Unknown", color: "bg-gray-500" },
-      },
       dnc: { true: { text: "DNC", color: "bg-red-600" }, false: { text: "Not DNC", color: "bg-green-600" } },
       tcp: { true: { text: "Submitted", color: "bg-green-600" }, false: { text: "Not Submitted", color: "bg-gray-500" } },
       playback: { true: { text: "Available", color: "bg-indigo-600" }, false: { text: "Not Available", color: "bg-gray-500" } },
     };
 
-    let key = "false";
-    if (type === "status") key = status ? status.toLowerCase() : "default";
-    else if (type === "dnc") key = status && status !== "none" ? "true" : "false";
-    else if (type === "playback") key = status ? "true" : "false";
-    else key = status ? "true" : "false";
-
+    let key = status ? "true" : "false";
     const { text, color } = config[type][key] || { text: "Unknown", color: "bg-gray-500" };
 
     return (
@@ -43,7 +32,6 @@ const SubmittedLeadTable = ({ lead }) => {
               <th className="px-4 py-3 text-left">Phone</th>
               <th className="px-4 py-3 text-left">Zip Code</th>
               <th className="px-4 py-3 text-left">Jornaya ID</th>
-              <th className="px-4 py-3 text-center">Status</th>
               <th className="px-4 py-3 text-center">DNC Status</th>
               <th className="px-4 py-3 text-center">TCP Consent</th>
               <th className="px-4 py-3 text-center">Playback</th>
@@ -56,7 +44,6 @@ const SubmittedLeadTable = ({ lead }) => {
               <td className="px-4 py-3 border-t border-gray-600">{lead.phone || "-"}</td>
               <td className="px-4 py-3 border-t border-gray-600">{lead.zipCode || "-"}</td>
               <td className="px-4 py-3 border-t border-gray-600 font-mono text-sm truncate max-w-[180px]">{lead.jornayaId || "-"}</td>
-              <td className="px-4 py-3 border-t border-gray-600"><StatusBadge status={lead.status} type="status" /></td>
               <td className="px-4 py-3 border-t border-gray-600"><StatusBadge status={lead.dncStatus} type="dnc" /></td>
               <td className="px-4 py-3 border-t border-gray-600"><StatusBadge status={lead.tcpConsent} type="tcp" /></td>
               <td className="px-4 py-3 border-t border-gray-600"><StatusBadge status={lead.playbackUrl} type="playback" /></td>

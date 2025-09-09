@@ -19,24 +19,23 @@ api.interceptors.response.use(
 
       try {
         // Refresh token call
-        await api.post("/user/refreshAccessToken");
+        await api.post("/user/refreshAccessToken", {}, { withCredentials: true });
 
-        // ✅ Retry original request with new access token
-        return api(originalRequest);
+        // ✅ Retry original request with updated cookies
+        return api({
+          ...originalRequest,
+          withCredentials: true,
+        });
       } catch (refreshError) {
         console.error("Refresh token failed, logging out...", refreshError);
 
-        // ✅ Direct Logout
-        // cookies clear karne ke liye backend logout call
         try {
-          await api.post("/user/logout");
+          await api.post("/user/logout", {}, { withCredentials: true });
         } catch (e) {
           console.warn("Logout API failed, but forcing redirect anyway.");
         }
 
-        // ✅ Force redirect to login
         window.location.href = "/login";
-
         return Promise.reject(refreshError);
       }
     }

@@ -6,22 +6,42 @@ import { parseMessageApi } from "../../api/parseMessageApi/parseMessageApi.js";
 import SubmittedLeadTable from "./SubmittedLeadTable.jsx";
 
 // 🔹 Reusable InputField Component
-const InputField = ({ label, name, value, onChange, error, type = "text", placeholder }) => (
+const InputField = ({ label, name, value, onChange, error, type = "text", placeholder, disabled, multiline = false }) => (
   <div className="w-full">
     <label className="block mb-2 text-sm font-semibold text-gray-300 tracking-wide">
       {label} <span className="text-red-400">*</span>
     </label>
-    <input
-      type={type}
-      name={name}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className={`w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 border shadow-sm 
-        transition duration-200 ease-in-out placeholder-gray-400
-        focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900
-        ${error ? "border-red-500 focus:ring-red-500" : "border-gray-700 focus:ring-indigo-500"}`}
-    />
+
+    {multiline ? (
+      <textarea
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        rows={5} // textarea ki height
+        className={`w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 border shadow-sm resize-y
+          transition duration-200 ease-in-out placeholder-gray-400
+          focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900
+          ${disabled ? "opacity-70 cursor-not-allowed" : ""}
+          ${error ? "border-red-500 focus:ring-red-500" : "border-gray-700 focus:ring-indigo-500"}`}
+      />
+    ) : (
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={`w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 border shadow-sm 
+          transition duration-200 ease-in-out placeholder-gray-400
+          focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900
+          ${disabled ? "opacity-70 cursor-not-allowed" : ""}
+          ${error ? "border-red-500 focus:ring-red-500" : "border-gray-700 focus:ring-indigo-500"}`}
+      />
+    )}
+
     {error && (
       <p className="text-red-400 text-sm mt-2 flex items-center animate-fadeIn">{error}</p>
     )}
@@ -34,6 +54,7 @@ const ParseMessageForm = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [leadAdded, setLeadAdded] = useState(null);
+  const [isEditable, setIsEditable] = useState(false); // 🔹 New state for edit mode
 
   const validate = () => {
     const newErrors = {};
@@ -57,8 +78,8 @@ const ParseMessageForm = () => {
 
       if (!res?.phone || !res?.jornayaId) throw new Error("No leads parsed");
 
-      // Add a "status" field as pending
-      setParsedData({ ...res, status: "Pending" });
+      setParsedData(res);
+      setIsEditable(false); // reset edit mode
       toast.success("✅ Lead extracted successfully!");
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "❌ Failed to extract lead");
@@ -90,6 +111,7 @@ const ParseMessageForm = () => {
     setMessage("");
     setParsedData(null);
     setErrors({});
+    setIsEditable(false);
   };
 
   return (
@@ -103,6 +125,7 @@ const ParseMessageForm = () => {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Paste the message containing phone & Jornaya ID"
             error={errors.message}
+            multiline // 🔹 Now textarea instead of input
           />
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -127,8 +150,8 @@ const ParseMessageForm = () => {
 
       {parsedData && (
         <div className="space-y-6">
-          <h3 className="text-xl font-bold text-gray-100">Extract Lead</h3>
-          <div className="bg-gray-800 p-6 rounded-xl space-y-2">
+          <h3 className="text-xl font-bold text-gray-100">Extracted Lead</h3>
+          <div className="bg-gray-800 p-6 rounded-xl space-y-4">
             <InputField
               label="Phone"
               name="phone"
@@ -136,6 +159,7 @@ const ParseMessageForm = () => {
               onChange={(e) =>
                 setParsedData((prev) => ({ ...prev, phone: e.target.value }))
               }
+              disabled={!isEditable} // 🔹 Disable until Edit clicked
             />
             <InputField
               label="Jornaya ID"
@@ -144,20 +168,40 @@ const ParseMessageForm = () => {
               onChange={(e) =>
                 setParsedData((prev) => ({ ...prev, jornayaId: e.target.value }))
               }
+              disabled={!isEditable} // 🔹 Disable until Edit clicked
             />
           </div>
+
           <div className="flex gap-4">
+            {!isEditable ? (
+              <button
+                onClick={() => setIsEditable(true)}
+                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3.5 rounded-xl font-semibold shadow-md cursor-pointer"
+              >
+                Edit
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsEditable(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3.5 rounded-xl font-semibold shadow-md cursor-pointer"
+              >
+                Done
+              </button>
+            )}
+
             <button
               onClick={handleAddLead}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-xl font-semibold shadow-md cursor-pointer"
+              disabled={loading}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-xl font-semibold shadow-md cursor-pointer disabled:opacity-50"
             >
-              Add Lead
+              {loading ? "Adding..." : "Add Lead"}
             </button>
+
             <button
               onClick={handleReset}
               className="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3.5 rounded-xl font-semibold shadow-md cursor-pointer"
             >
-              Extract Another Lead
+              Extract Another
             </button>
           </div>
         </div>
