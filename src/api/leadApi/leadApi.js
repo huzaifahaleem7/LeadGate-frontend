@@ -1,11 +1,11 @@
 import api from "../axios/axios.js";
 
 //addLead
-const addLead = async ({ firstName, lastName, phone, zipCode, jornayaId }) => {
+const addLead = async ({ phone, jornayaId }) => {
   try {
     const res = await api.post(
       "/lead/addlead",
-      { firstName, lastName, phone, zipCode, jornayaId },
+      { phone, jornayaId },
       {
         withCredentials: true,
       }

@@ -12,13 +12,11 @@ import { Toaster } from "react-hot-toast";
 // pages
 import { Login, Signup } from "./pages/auth/index.js";
 import {
-  AgentDashboard,
   AddLeadPage,
   MyLeadsPage,
   ReportsPage,
-} from "./pages/agent";
-import { TeamleadDashboard } from "./pages/teamlead";
-import { AdminDashboard } from "./pages/admin";
+  HomePage
+} from "./pages/teamlead/index.js"; // ✅ reuse existing lead pages
 
 // layout
 import DashboardLayout from "./components/layout/DashBoardLayout.jsx";
@@ -35,45 +33,21 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
 
-          {/* Agent Dashboard with nested routes */}
+          {/* Single Dashboard with nested routes */}
           <Route
-            path="/agent-dashboard/*" // <- added /* here
+            path="/dashboard/*"
             element={
-              <ProtectedRoute allowedRoles={["agent"]}>
+              <ProtectedRoute>
                 <LeadProvider>
                   <DashboardLayout />
                 </LeadProvider>
               </ProtectedRoute>
             }
           >
-            <Route index element={<AgentDashboard />} />
+            <Route index element={<HomePage />} />
             <Route path="add-lead" element={<AddLeadPage />} />
             <Route path="my-leads" element={<MyLeadsPage />} />
             <Route path="reports" element={<ReportsPage />} />
-          </Route>
-
-          {/* Team Lead Dashboard with nested routes */}
-          <Route
-            path="/teamlead-dashboard/*" // <- added /* here
-            element={
-              <ProtectedRoute allowedRoles={["teamlead"]}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<TeamleadDashboard />} />
-          </Route>
-
-          {/* Admin Dashboard with nested routes */}
-          <Route
-            path="/admin-dashboard/*" // <- added /* here
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
           </Route>
 
           {/* Fallback */}

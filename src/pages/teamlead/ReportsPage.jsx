@@ -9,11 +9,25 @@ import StatCard from "../../components/stats/StatCard.jsx";
 import { LeadPieChart, LeadsBarChart } from "../../components/charts";
 import { calculateLeadStats } from "../../utils";
 
+// ✅ Ensure Chart.js elements are registered (needed for Pie/Bar charts)
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from "chart.js";
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
+
 const ReportsPage = () => {
   const { leads, fetchLeads } = useLeads();
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(calculateLeadStats([]));
 
+  // Recalculate stats whenever leads change
   useEffect(() => {
     setStats(calculateLeadStats(leads));
   }, [leads]);
@@ -118,7 +132,8 @@ const ReportsPage = () => {
           whileHover={{ scale: 1.02 }}
         >
           <h2 className="text-xl font-bold mb-4">Lead Status Distribution</h2>
-          <LeadPieChart stats={stats} />
+          {/* ✅ Add key prop to force re-render and avoid canvas conflicts */}
+          <LeadPieChart key={stats.total} stats={stats} />
         </motion.div>
 
         <motion.div
@@ -127,7 +142,7 @@ const ReportsPage = () => {
           whileHover={{ scale: 1.02 }}
         >
           <h2 className="text-xl font-bold mb-4">Leads Submitted per Day</h2>
-          <LeadsBarChart stats={stats} />
+          <LeadsBarChart key={stats.dailyCounts.length} stats={stats} />
         </motion.div>
       </motion.div>
     </motion.div>

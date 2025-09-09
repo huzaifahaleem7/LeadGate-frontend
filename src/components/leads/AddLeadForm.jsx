@@ -3,7 +3,7 @@ import { useLeads } from "../../context/LeadContext/LeadContext.jsx";
 import { toast } from "react-hot-toast";
 import SubmittedLeadTable from "./SubmittedLeadTable.jsx";
 
-// Input Field Component
+// 🔹 Reusable InputField Component
 const InputField = ({ label, name, value, onChange, error, type = "text", placeholder }) => (
   <div className="w-full">
     <label className="block mb-2 text-sm font-semibold text-gray-300 tracking-wide">
@@ -23,7 +23,7 @@ const InputField = ({ label, name, value, onChange, error, type = "text", placeh
     {error && (
       <p className="text-red-400 text-sm mt-2 flex items-center animate-fadeIn">
         <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-9-4a1 1 0 10-2 0 1 1 0 002 0zm0 2a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+          <path fillRule="evenodd" d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-9-4a1 1 0 10-2 0 1 1 0zm0 2a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
         </svg>
         {error}
       </p>
@@ -33,19 +33,18 @@ const InputField = ({ label, name, value, onChange, error, type = "text", placeh
 
 const AddLeadForm = () => {
   const { createdLead } = useLeads();
-  const initialState = { firstName: "", lastName: "", phone: "", zipCode: "", jornayaId: "" };
+
+  const initialState = { phone: "", jornayaId: "" };
   const [formData, setFormData] = useState(initialState);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [lastLead, setLastLead] = useState(null);
   const [showForm, setShowForm] = useState(true);
 
+  // 🔹 Validation rules
   const rules = {
-    firstName: val => (!val.trim() ? "First name is required" : ""),
-    lastName: val => (!val.trim() ? "Last name is required" : ""),
-    phone: val => !/^\d{10,15}$/.test(val.trim()) ? "Phone must be 10–15 digits" : "",
-    zipCode: val => !/^\d{5}$/.test(val.trim()) ? "Zip Code must be 5 digits" : "",
-    jornayaId: val => (!val.trim() ? "Jornaya ID is required" : "")
+    phone: (val) => (!/^\d{10,15}$/.test(val.trim()) ? "Phone must be 10–15 digits" : ""),
+    jornayaId: (val) => (!val.trim() ? "Jornaya ID is required" : "")
   };
 
   const validate = () => {
@@ -59,8 +58,8 @@ const AddLeadForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: rules[name](value) }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: rules[name](value) }));
   };
 
   const handleSubmit = async (e) => {
@@ -68,8 +67,7 @@ const AddLeadForm = () => {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      const firstErrorField = Object.keys(validationErrors)[0];
-      document.querySelector(`[name="${firstErrorField}"]`)?.focus();
+      document.querySelector(`[name="${Object.keys(validationErrors)[0]}"]`)?.focus();
       return;
     }
 
@@ -99,7 +97,7 @@ const AddLeadForm = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-8 bg-gray-900 rounded-2xl shadow-2xl space-y-10 animate-fadeIn">
+    <div className="max-w-2xl mx-auto p-8 bg-gray-900 rounded-2xl shadow-2xl space-y-10 animate-fadeIn">
       {showForm && (
         <div className="space-y-8">
           <div className="flex items-center justify-between border-b border-gray-700 pb-4">
@@ -107,17 +105,25 @@ const AddLeadForm = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InputField label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} error={errors.firstName} placeholder="Enter first name"/>
-              <InputField label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} error={errors.lastName} placeholder="Enter last name"/>
-            </div>
+            {/* 🔹 Only Phone + Jornaya ID */}
+            <InputField
+              label="Phone"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter phone number (10–15 digits)"
+              error={errors.phone}
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InputField label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="10–15 digits" error={errors.phone}/>
-              <InputField label="Zip Code" name="zipCode" value={formData.zipCode} onChange={handleChange} placeholder="5 digits" error={errors.zipCode}/>
-            </div>
-
-            <InputField label="Jornaya ID" name="jornayaId" value={formData.jornayaId} onChange={handleChange} error={errors.jornayaId} placeholder="Enter Jornaya ID"/>
+            <InputField
+              label="Jornaya ID"
+              name="jornayaId"
+              value={formData.jornayaId}
+              onChange={handleChange}
+              placeholder="Enter Jornaya ID"
+              error={errors.jornayaId}
+            />
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button

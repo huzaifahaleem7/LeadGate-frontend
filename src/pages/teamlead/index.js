@@ -1,3 +1,6 @@
-import TeamleadDashboard from "./TeamleadDashboard.jsx";
+import HomePage from "./TeamleadDashboard.jsx";
+import AddLeadPage from "./AddLeadPage.jsx"
+import MyLeadsPage from "./MyLeadPage.jsx"
+import ReportsPage from "./ReportsPage.jsx"
 
-export { TeamleadDashboard }
+export { HomePage, AddLeadPage, MyLeadsPage, ReportsPage };

@@ -1,7 +1,6 @@
 // src/components/Auth/SignupForm.jsx
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext/AuthContext.jsx";
-
 const SignupForm = () => {
   const [formData, setFormData] = useState({
     fullName: "",

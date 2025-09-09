@@ -15,23 +15,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true); // ✅ initialize as true
 
-  // Helper: redirect based on role
-  const redirectByRole = (role) => {
-    switch (role) {
-      case "agent":
-        navigate("/agent-dashboard");
-        break;
-      case "teamlead":
-        navigate("/teamlead-dashboard");
-        break;
-      case "admin":
-        navigate("/admin-dashboard");
-        break;
-      default:
-        navigate("/dashboard");
-    }
-  };
-
   // signup
   const signup = async (email, username, fullName, password) => {
     try {
@@ -50,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await loginUser(email, password);
       setUser(res.data.user);
-      redirectByRole(res.data.user.role); // ✅ redirect based on role
+      navigate("/dashboard"); // ✅ single redirect (no role check)
     } catch (error) {
       console.error("Login failed:", error.response?.data?.message || error.message);
       throw error;
@@ -78,7 +61,7 @@ export const AuthProvider = ({ children }) => {
         setUser(res.data.user);
         console.log("User loaded from refresh:", res.data.user);
         if (res.data.user) {
-          redirectByRole(res.data.user.role); // ✅ redirect on refresh
+          navigate("/dashboard"); // ✅ single redirect (no role check)
         }
       } catch (err) {
         setUser(null);

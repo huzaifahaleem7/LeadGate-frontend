@@ -1,58 +1,113 @@
-import React from "react";
+// src/pages/agent/AgentHomePage.jsx
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useLeads } from "../../context/LeadContext/LeadContext.jsx";
+import { getUserProfile } from "../../api/authApi/authApi.js";
+import StatCard from "../../components/stats/StatCard.jsx";
+import { LeadPieChart, LeadsBarChart } from "../../components/charts/index.js";
+import { calculateLeadStats } from "../../utils/index.js";
 
-function TeamleadDashboard() {
+const HomePage = () => {
+  const { leads, fetchLeads } = useLeads();
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState(calculateLeadStats([]));
+  const [loading, setLoading] = useState(true);
+
+  // Fetch leads + user
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await fetchLeads();
+        const res = await getUserProfile();
+        if (res?.data?.user) setUser(res.data.user);
+      } catch (error) {
+        console.error("Error loading data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Recalculate stats when leads change
+  useEffect(() => {
+    setStats(calculateLeadStats(leads));
+  }, [leads]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-900">
+        <motion.div
+          className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+        />
+      </div>
+    );
+  }
+
+  // Sequential animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.05 } },
+  };
+
+  const child = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  };
+
+  const welcomeText = `Welcome, ${user?.fullName || "Agent"}!`;
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      {/* Dashboard Header */}
-      <div className="mb-8 text-center">
-        <h1 className="text-5xl font-bold text-blue-600">Teamlead Dashboard</h1>
-        <p className="text-gray-600 mt-2">Your workspace overview</p>
+    <div className="p-6 bg-gray-900 min-h-screen text-gray-100 flex flex-col items-center">
+      {/* Sequential Welcome */}
+      <motion.div className="text-center mb-12">
+        <motion.h1
+          className="text-4xl md:text-5xl font-semibold text-white mb-2 flex justify-center flex-wrap"
+          variants={container}
+          initial="hidden"
+          animate="show"
+        >
+          {welcomeText.split("").map((char, index) => (
+            <motion.span key={index} variants={child}>
+              {char === " " ? "\u00A0" : char}
+            </motion.span>
+          ))}
+        </motion.h1>
+        <motion.p
+          className="text-gray-400 text-lg md:text-xl mt-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.8 }}
+        >
+          Monitor your leads, analyze trends, and optimize performance.
+        </motion.p>
+      </motion.div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 w-full">
+        <StatCard label="Total Leads" value={stats.total} bg="bg-blue-500" text="text-gray-50" />
+        <StatCard label="Approved Leads" value={stats.approved} bg="bg-green-500" text="text-gray-50" />
+        <StatCard label="Rejected Leads" value={stats.rejected} bg="bg-red-500" text="text-gray-50" />
+        <StatCard label="Pending Leads" value={stats.pending} bg="bg-yellow-500" text="text-gray-900" />
       </div>
 
-      {/* Dashboard Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div className="bg-white shadow-lg rounded-xl p-6 text-center hover:shadow-2xl transition">
-          <h2 className="text-xl font-semibold mb-2">Leads</h2>
-          <p className="text-3xl font-bold text-blue-600">120</p>
-        </div>
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+        <motion.div className="bg-gray-800 p-6 rounded-lg shadow-lg" whileHover={{ scale: 1.02 }}>
+          <h2 className="text-xl font-bold mb-4">Lead Status Distribution</h2>
+          <LeadPieChart stats={stats} />
+        </motion.div>
 
-        <div className="bg-white shadow-lg rounded-xl p-6 text-center hover:shadow-2xl transition">
-          <h2 className="text-xl font-semibold mb-2">Tasks</h2>
-          <p className="text-3xl font-bold text-green-600">34</p>
-        </div>
-
-        <div className="bg-white shadow-lg rounded-xl p-6 text-center hover:shadow-2xl transition">
-          <h2 className="text-xl font-semibold mb-2">Revenue</h2>
-          <p className="text-3xl font-bold text-purple-600">$12K</p>
-        </div>
-
-        <div className="bg-white shadow-lg rounded-xl p-6 text-center hover:shadow-2xl transition">
-          <h2 className="text-xl font-semibold mb-2">Clients</h2>
-          <p className="text-3xl font-bold text-red-600">58</p>
-        </div>
-      </div>
-
-      {/* Middle Section with Dashboard Name */}
-      <div className="my-12 flex items-center justify-center">
-        <div className="bg-blue-100 rounded-2xl shadow-xl p-16 w-full max-w-3xl text-center">
-          <h2 className="text-4xl font-bold text-blue-700">
-            TeamLead Dashboard
-          </h2>
-        </div>
-      </div>
-
-      {/* Recent Activities Section */}
-      <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-2xl font-semibold mb-4">Recent Activities</h2>
-        <ul className="list-disc list-inside text-gray-700">
-          <li>Lead John Doe assigned</li>
-          <li>Task “Follow up” completed</li>
-          <li>Revenue updated for July</li>
-          <li>New client added: Jane Smith</li>
-        </ul>
+        <motion.div className="bg-gray-800 p-6 rounded-lg shadow-lg" whileHover={{ scale: 1.02 }}>
+          <h2 className="text-xl font-bold mb-4">Leads Submitted per Day</h2>
+          {/* Updated bar chart component */}
+          <LeadsBarChart stats={stats} />
+        </motion.div>
       </div>
     </div>
   );
-}
+};
 
-export default TeamleadDashboard;
+export default HomePage;
