@@ -1,11 +1,13 @@
+// src/components/DashboardLayout.jsx
 import { NavLink, Outlet } from "react-router-dom";
 import { PlusIcon, Squares2X2Icon, ChartBarIcon, HomeIcon } from "@heroicons/react/24/outline";
 import { Navbar } from "./index";
 
 const DashboardLayout = () => {
+  // ✅ Sidebar links
   const sidebarLinks = [
     { name: "Home", path: "/dashboard", icon: HomeIcon, exact: true },
-    { name: "Add Lead", path: "/dashboard/add-lead", icon: PlusIcon },
+    { name: "Check Leads", path: "/dashboard/check-leads", icon: PlusIcon },
     { name: "My Leads", path: "/dashboard/my-leads", icon: Squares2X2Icon },
     { name: "Reports", path: "/dashboard/reports", icon: ChartBarIcon },
   ];
@@ -22,7 +24,7 @@ const DashboardLayout = () => {
               <NavLink
                 key={link.name}
                 to={link.path}
-                end={link.exact || false} // <-- ensures exact match only for Home
+                end={link.exact || false} // exact only for Home
                 className={({ isActive }) =>
                   `flex items-center px-3 py-2 rounded-md text-gray-200 hover:bg-gray-700 transition-colors cursor-pointer ${
                     isActive ? "bg-gray-700 font-semibold text-white" : ""

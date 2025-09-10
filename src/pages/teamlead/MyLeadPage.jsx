@@ -35,8 +35,7 @@ const MyLeadsPage = () => {
       lead.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lead.phone?.includes(searchTerm) ||
       lead.zipCode?.includes(searchTerm) ||
-      lead.jornayaId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.status?.toLowerCase().includes(searchTerm.toLowerCase())
+      lead.jornayaId?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -73,7 +72,7 @@ const MyLeadsPage = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <table className="min-w-[1200px] w-full text-sm whitespace-nowrap">
+        <table className="min-w-[1100px] w-full text-sm whitespace-nowrap">
           <thead className="bg-gray-800 text-gray-300 uppercase text-xs tracking-wider">
             <tr>
               <th className="px-4 py-3 text-left">First Name</th>
@@ -84,13 +83,12 @@ const MyLeadsPage = () => {
               <th className="px-4 py-3 text-left">TCPA</th>
               <th className="px-4 py-3 text-left">DNC</th>
               <th className="px-4 py-3 text-left">Playback</th>
-              <th className="px-4 py-3 text-left">Status</th>
             </tr>
           </thead>
           <tbody className="bg-gray-900 divide-y divide-gray-700">
             {loading ? (
               <tr>
-                <td colSpan="9" className="text-center py-6">
+                <td colSpan="8" className="text-center py-6">
                   {/* Bluish spinner like AgentHomePage */}
                   <motion.div
                     className="w-12 h-12 mx-auto border-4 border-blue-500 border-t-transparent rounded-full"
@@ -102,7 +100,7 @@ const MyLeadsPage = () => {
               </tr>
             ) : filteredLeads.length === 0 ? (
               <tr>
-                <td colSpan="9" className="text-center py-6 text-gray-400">
+                <td colSpan="8" className="text-center py-6 text-gray-400">
                   No leads found.
                 </td>
               </tr>
@@ -120,23 +118,14 @@ const MyLeadsPage = () => {
                   <td className="px-4 py-2">{formatPhone(lead.phone)}</td>
                   <td className="px-4 py-2">{lead.zipCode || "-"}</td>
                   <td className="px-4 py-2 break-all">{lead.jornayaId || "-"}</td>
-                  <td className="px-4 py-2">{lead.tcpConsent ? "Submitted" : "Not Submitted"}</td>
+                  <td className="px-4 py-2">
+                    {lead.tcpConsent ? "Submitted" : "Not Submitted"}
+                  </td>
                   <td className="px-4 py-2">
                     {lead.dncStatus === "none" ? "No / Not DNC" : lead.dncStatus}
                   </td>
-                  <td className="px-4 py-2">{lead.playbackUrl ? "Available" : "N/A"}</td>
                   <td className="px-4 py-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        lead.status?.toLowerCase() === "active"
-                          ? "bg-green-600 text-white"
-                          : lead.status?.toLowerCase() === "pending"
-                          ? "bg-yellow-500 text-gray-900"
-                          : "bg-red-500 text-white"
-                      }`}
-                    >
-                      {lead.status || "Pending"}
-                    </span>
+                    {lead.playbackUrl ? "Available" : "N/A"}
                   </td>
                 </motion.tr>
               ))

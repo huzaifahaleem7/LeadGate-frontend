@@ -1,11 +1,10 @@
-import axios from "axios";
-import { API_BASE_URL } from "../../utils/constants.js";
+import axios from 'axios'
+import { API_BASE_URL } from '../../utils/constants.js'
 
-// Axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true, // cookies bhi send hongi
-});
+    baseURL: API_BASE_URL,
+    withCredentials: true
+})
 
 // Response Interceptor
 api.interceptors.response.use(
@@ -13,30 +12,16 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // ✅ Access token expired
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Refresh token call
-        await api.post("/user/refreshAccessToken", {}, { withCredentials: true });
-
-        // ✅ Retry original request with updated cookies
-        return api({
-          ...originalRequest,
-          withCredentials: true,
-        });
+        await api.post("/user/refreshAccessToken"); // refresh token
+        return api(originalRequest); // retry original request
       } catch (refreshError) {
-        console.error("Refresh token failed, logging out...", refreshError);
-
-        try {
-          await api.post("/user/logout", {}, { withCredentials: true });
-        } catch (e) {
-          console.warn("Logout API failed, but forcing redirect anyway.");
-        }
-
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
+        console.error("Refresh token failed", refreshError);
+        // Instead of window.location.href, just update state
+        // You can trigger logout through a function from AuthContext
       }
     }
 
@@ -44,4 +29,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+export default api

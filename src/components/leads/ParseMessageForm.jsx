@@ -6,7 +6,17 @@ import { parseMessageApi } from "../../api/parseMessageApi/parseMessageApi.js";
 import SubmittedLeadTable from "./SubmittedLeadTable.jsx";
 
 // 🔹 Reusable InputField Component
-const InputField = ({ label, name, value, onChange, error, type = "text", placeholder, disabled, multiline = false }) => (
+const InputField = ({
+  label,
+  name,
+  value,
+  onChange,
+  error,
+  type = "text",
+  placeholder,
+  disabled,
+  multiline = false,
+}) => (
   <div className="w-full">
     <label className="block mb-2 text-sm font-semibold text-gray-300 tracking-wide">
       {label} <span className="text-red-400">*</span>
@@ -19,7 +29,7 @@ const InputField = ({ label, name, value, onChange, error, type = "text", placeh
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        rows={5} // textarea ki height
+        rows={5}
         className={`w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 border shadow-sm resize-y
           transition duration-200 ease-in-out placeholder-gray-400
           focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900
@@ -43,7 +53,9 @@ const InputField = ({ label, name, value, onChange, error, type = "text", placeh
     )}
 
     {error && (
-      <p className="text-red-400 text-sm mt-2 flex items-center animate-fadeIn">{error}</p>
+      <p className="text-red-400 text-sm mt-2 flex items-center animate-fadeIn">
+        {error}
+      </p>
     )}
   </div>
 );
@@ -54,7 +66,7 @@ const ParseMessageForm = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [leadAdded, setLeadAdded] = useState(null);
-  const [isEditable, setIsEditable] = useState(false); // 🔹 New state for edit mode
+  const [isEditable, setIsEditable] = useState(false);
 
   const validate = () => {
     const newErrors = {};
@@ -74,17 +86,16 @@ const ParseMessageForm = () => {
     setLoading(true);
     try {
       const res = await parseMessageApi(message.trim());
-      console.log("Parsed message:", res);
-
       if (!res?.phone || !res?.jornayaId) throw new Error("No leads parsed");
 
       setParsedData(res);
-      setIsEditable(false); // reset edit mode
+      setIsEditable(false);
       toast.success("✅ Lead extracted successfully!");
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "❌ Failed to extract lead");
+      toast.error(
+        err.response?.data?.message || err.message || "❌ Failed to extract lead"
+      );
       setParsedData(null);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -95,13 +106,22 @@ const ParseMessageForm = () => {
     setLoading(true);
     try {
       const res = await addLead(parsedData);
-      setLeadAdded(res.data.lead);
-      toast.success("✅ Lead added successfully!");
+
+      // ✅ new or existing lead dono ke liye table show hoga
+      setLeadAdded(res.data.lead || res.data.existingLead);
+
+      if (res.status === 201) {
+        toast.success("✅ Lead added successfully!");
+      } else if (res.status === 200) {
+        toast("ℹ️ Lead already exists, showing details.");
+      }
+
       setParsedData(null);
       setMessage("");
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "❌ Failed to add lead");
-      console.error(err);
+      toast.error(
+        err.response?.data?.message || err.message || "❌ Failed to add lead"
+      );
     } finally {
       setLoading(false);
     }
@@ -112,11 +132,12 @@ const ParseMessageForm = () => {
     setParsedData(null);
     setErrors({});
     setIsEditable(false);
+    setLeadAdded(null);
   };
 
   return (
     <div className="max-w-2xl mx-auto p-8 bg-gray-900 rounded-2xl shadow-2xl space-y-10 animate-fadeIn">
-      {!parsedData && (
+      {!parsedData && !leadAdded && (
         <form onSubmit={handleExtract} className="space-y-6">
           <InputField
             label="Message"
@@ -125,7 +146,7 @@ const ParseMessageForm = () => {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Paste the message containing phone & Jornaya ID"
             error={errors.message}
-            multiline // 🔹 Now textarea instead of input
+            multiline
           />
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -159,16 +180,19 @@ const ParseMessageForm = () => {
               onChange={(e) =>
                 setParsedData((prev) => ({ ...prev, phone: e.target.value }))
               }
-              disabled={!isEditable} // 🔹 Disable until Edit clicked
+              disabled={!isEditable}
             />
             <InputField
               label="Jornaya ID"
               name="jornayaId"
               value={parsedData.jornayaId}
               onChange={(e) =>
-                setParsedData((prev) => ({ ...prev, jornayaId: e.target.value }))
+                setParsedData((prev) => ({
+                  ...prev,
+                  jornayaId: e.target.value,
+                }))
               }
-              disabled={!isEditable} // 🔹 Disable until Edit clicked
+              disabled={!isEditable}
             />
           </div>
 
@@ -194,7 +218,7 @@ const ParseMessageForm = () => {
               disabled={loading}
               className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-xl font-semibold shadow-md cursor-pointer disabled:opacity-50"
             >
-              {loading ? "Adding..." : "Add Lead"}
+              {loading ? "checking.." : "Check Lead"}
             </button>
 
             <button
@@ -207,6 +231,7 @@ const ParseMessageForm = () => {
         </div>
       )}
 
+      {/* ✅ New or Existing Lead dono case me show */}
       {leadAdded && <SubmittedLeadTable lead={leadAdded} />}
     </div>
   );

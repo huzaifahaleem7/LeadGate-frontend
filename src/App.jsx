@@ -12,7 +12,7 @@ import { Toaster } from "react-hot-toast";
 // pages
 import { Login, Signup } from "./pages/auth/index.js";
 import {
-  AddLeadPage,
+  CheckLeadPage,
   MyLeadsPage,
   ReportsPage,
   HomePage,
@@ -94,7 +94,7 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<HomePage />} />
-        <Route path="add-lead" element={<AddLeadPage />} />
+        <Route path="check-leads" element={<CheckLeadPage />} />
         <Route path="my-leads" element={<MyLeadsPage />} />
         <Route path="reports" element={<ReportsPage />} />
       </Route>

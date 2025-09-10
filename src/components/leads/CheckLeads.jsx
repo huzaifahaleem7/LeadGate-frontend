@@ -39,7 +39,7 @@ const InputField = ({ label, name, value, onChange, error, type = "text", placeh
   </div>
 );
 
-const AddLeadForm = () => {
+const CheckLeadForm = () => {
   const { createdLead } = useLeads();
 
   const initialState = { phone: "", jornayaId: "" };
@@ -74,6 +74,7 @@ const AddLeadForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -85,16 +86,22 @@ const AddLeadForm = () => {
 
     setErrors({});
     setLoading(true);
+
     try {
+      // 🔹 Trimmed payload
       const payload = Object.fromEntries(
         Object.entries(formData).map(([k, v]) => [k, v.trim()])
       );
+
       const res = await createdLead(payload);
+      console.log("API Response:", res);
 
-      if (!res?.data?.lead) throw new Error("Invalid API response");
+      // 🔹 Handle both new and existing leads
+      const lead = res?.data?.lead || res?.data?.existingLead;
+      if (!lead) throw new Error("Invalid API response");
 
-      toast.success("✅ Lead saved successfully!");
-      setLastLead(res.data.lead);
+      toast.success(res.data.message || "✅ Lead checked successfully!");
+      setLastLead(lead);
       setShowForm(false);
       setFormData(initialState);
     } catch (err) {
@@ -118,12 +125,11 @@ const AddLeadForm = () => {
         <div className="space-y-8">
           <div className="flex items-center justify-between border-b border-gray-700 pb-4">
             <h2 className="text-2xl font-bold text-gray-100">
-              ➕ Submit New Lead
+              ➕ Check New Lead
             </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* 🔹 Only Phone + Jornaya ID */}
             <InputField
               label="Phone"
               name="phone"
@@ -171,10 +177,10 @@ const AddLeadForm = () => {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                       />
                     </svg>
-                    Saving Lead...
+                    checking Lead...
                   </>
                 ) : (
-                  "Submit Lead"
+                  "Check Lead"
                 )}
               </button>
 
@@ -190,10 +196,10 @@ const AddLeadForm = () => {
         </div>
       )}
 
-      {/* ✅ Now SubmittedLeadTable has no status */}
+      {/* ✅ Show the last lead submitted or fetched */}
       {lastLead && <SubmittedLeadTable lead={lastLead} />}
     </div>
   );
 };
 
-export default AddLeadForm;
+export default CheckLeadForm;

@@ -3,20 +3,27 @@ const SubmittedLeadTable = ({ lead }) => {
 
   const StatusBadge = ({ status, type }) => {
     const config = {
-      dnc: { true: { text: "DNC", color: "bg-red-600" }, false: { text: "Not DNC", color: "bg-green-600" } },
-      tcp: { true: { text: "Submitted", color: "bg-green-600" }, false: { text: "Not Submitted", color: "bg-gray-500" } },
-      playback: { true: { text: "Available", color: "bg-indigo-600" }, false: { text: "Not Available", color: "bg-gray-500" } },
+      dnc: { 
+        true: { text: "DNC", color: "text-whote" }, 
+        false: { text: "Not DNC", color: "text-white" } 
+      },
+      playback: { 
+        true: { text: "Available", color: "text-white" }, 
+        false: { text: "Not Available", color: "text-gray-400" } 
+      },
+      tcp: { 
+        true: { text: "Submitted", color: "text-white" }, 
+        false: { text: "Not Submitted", color: "text-gray-400" } 
+      },
     };
 
     let key = status ? "true" : "false";
-    const { text, color } = config[type][key] || { text: "Unknown", color: "bg-gray-500" };
+    const { text, color } = config[type][key] || { text: "Unknown", color: "text-gray-400" };
 
     return (
-      <div className="flex justify-center">
-        <span className={`${color} text-white px-3 py-1.5 rounded-full text-xs font-semibold inline-block min-w-[100px] text-center`}>
-          {text}
-        </span>
-      </div>
+      <span className={`${color} font-semibold`}>
+        {text}
+      </span>
     );
   };
 
@@ -44,9 +51,9 @@ const SubmittedLeadTable = ({ lead }) => {
               <td className="px-4 py-3 border-t border-gray-600">{lead.phone || "-"}</td>
               <td className="px-4 py-3 border-t border-gray-600">{lead.zipCode || "-"}</td>
               <td className="px-4 py-3 border-t border-gray-600 font-mono text-sm truncate max-w-[180px]">{lead.jornayaId || "-"}</td>
-              <td className="px-4 py-3 border-t border-gray-600"><StatusBadge status={lead.dncStatus} type="dnc" /></td>
-              <td className="px-4 py-3 border-t border-gray-600"><StatusBadge status={lead.tcpConsent} type="tcp" /></td>
-              <td className="px-4 py-3 border-t border-gray-600"><StatusBadge status={lead.playbackUrl} type="playback" /></td>
+              <td className="px-4 py-3 border-t border-gray-600 text-center"><StatusBadge status={lead.dncStatus} type="dnc" /></td>
+              <td className="px-4 py-3 border-t border-gray-600 text-center"><StatusBadge status={lead.tcpConsent} type="tcp" /></td>
+              <td className="px-4 py-3 border-t border-gray-600 text-center"><StatusBadge status={lead.playbackUrl} type="playback" /></td>
             </tr>
           </tbody>
         </table>

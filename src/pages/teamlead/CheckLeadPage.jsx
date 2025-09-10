@@ -1,7 +1,7 @@
 // src/pages/agent/AddLeadPage.jsx
 import { LeadCard } from "../../components/leads";
 
-const AddLeadPage = () => {
+const CheckLeadPage = () => {
   return (
     <div className="p-6 min-h-screen bg-gray-900 flex items-center justify-center">
       <LeadCard />
@@ -9,4 +9,4 @@ const AddLeadPage = () => {
   );
 };
 
-export default AddLeadPage;
+export default CheckLeadPage;

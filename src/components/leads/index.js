@@ -1,5 +1,5 @@
 import LeadCard from "./LeadCard";
-import AddLeadForm from "./AddLeadForm";
+import CheckLeadForm from "./CheckLeads";
 import SubmittedLeadTable from "./SubmittedLeadTable";
 
-export { LeadCard, AddLeadForm, SubmittedLeadTable };
+export { LeadCard, CheckLeadForm, SubmittedLeadTable };

@@ -20,7 +20,7 @@ const Sidebar = () => {
   const linksConfig = {
     agent: [
       { name: "Home", icon: HomeIcon, path: "/agent-dashboard" },
-      { name: "Add Lead", icon: PlusIcon, path: "/agent-dashboard/add-lead" },
+      { name: "Check Lead", icon: PlusIcon, path: "/agent-dashboard/add-lead" },
       { name: "My Leads", icon: Squares2X2Icon, path: "/agent-dashboard/my-leads" },
       { name: "Reports", icon: ChartBarIcon, path: "/agent-dashboard/reports" },
     ],
